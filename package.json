@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "npx lightningcss-linux-x64-gnu install",
+    "postinstall": "prisma generate",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint"    
   },
   "dependencies": {
     "@clerk/localizations": "^3.18.0",
