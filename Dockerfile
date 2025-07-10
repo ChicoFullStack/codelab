@@ -4,10 +4,13 @@ FROM node:20-alpine AS builder
 # Diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos de dependência primeiro (melhor para cache)
+# Copia os arquivos de dependência primeiro
 COPY package.json package-lock.json ./
 
-# Instala as dependências
+# ✅ Copia o schema do Prisma ANTES da instalação
+COPY prisma ./prisma
+
+# Instala as dependências (executa "postinstall" => prisma generate)
 RUN npm install
 
 # Copia o restante da aplicação
@@ -16,20 +19,19 @@ COPY . .
 # Gera o build do Next.js
 RUN npm run build
 
-# Etapa 2: imagem final para produção
+# Etapa 2: imagem final
 FROM node:20-alpine AS runner
 
-# Diretório de trabalho
 WORKDIR /app
 
-# Copia apenas o build e dependências necessárias
+# Copia build e arquivos necessários para produção
 COPY --from=builder /app/.next .next
 COPY --from=builder /app/public public
-COPY --from=builder /app/package.json .
-COPY --from=builder /app/node_modules node_modules
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
 
-# Expõe a porta padrão do Next.js
+# ⚠️ Se você for usar Prisma em runtime (ex: via API routes ou Edge Functions)
+COPY --from=builder /app/prisma ./prisma
+
 EXPOSE 3000
-
-# Comando para iniciar a aplicação
 CMD ["npm", "start"]
