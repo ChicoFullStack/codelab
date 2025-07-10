@@ -9,7 +9,7 @@ COPY prisma ./prisma
 
 # Instala dependências com postinstall (prisma generate)
 RUN apt-get update && apt-get install -y openssl && apt-get clean \
-  && npm install
+  && npm install --platform=linux
 
 # Copia restante do código
 COPY . .
