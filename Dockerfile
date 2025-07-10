@@ -3,16 +3,14 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Copia arquivos de dependência
-COPY package.json package-lock.json ./
-COPY prisma ./prisma
+# Instala libssl e dependências necessárias para Prisma
+RUN apt-get update && apt-get install -y openssl && apt-get clean
 
-# Instala dependências com postinstall (prisma generate)
-RUN apt-get update && apt-get install -y openssl && apt-get clean \
-  && npm install --platform=linux
-
-# Copia restante do código
+# Copia tudo de uma vez
 COPY . .
+
+# Instala dependências com postinstall (prisma generate + lightningcss detectado)
+RUN npm install --platform=linux
 
 # Gera o build do Next.js
 RUN npm run build
@@ -29,8 +27,4 @@ RUN apt-get update && apt-get install -y openssl && apt-get clean
 COPY --from=builder /app/.next .next
 COPY --from=builder /app/public public
 COPY --from=builder /app/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
-
-EXPOSE 3000
-CMD ["npm", "start"]
+COPY --from=builder /app/node_modules ./node_modul
